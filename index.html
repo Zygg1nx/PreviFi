@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prévisionnel Financier Pro</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Librairies autorisées -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.js"></script>
+
+    <!-- Exceptions nécessaires à la génération de fichiers binaires (export) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ================= WIZARD DE DÉMARRAGE ================= -->
+    <div id="wizard-overlay" class="wizard-overlay">
+        <div class="wizard-card">
+            <h1>Créer votre prévisionnel</h1>
+            <p class="muted">Configurez les bases de votre business plan en 3 étapes.</p>
+            <div class="wizard-progress">
+                <div id="wizard-bar" class="wizard-progress-bar"></div>
+            </div>
+
+            <div id="wizard-step-1" class="wizard-step">
+                <label>Nom de l'entreprise</label>
+                <input type="text" id="w-nom" placeholder="Ma Société SAS">
+                <label>Forme juridique</label>
+                <select id="w-forme">
+                    <option>SAS</option>
+                    <option>SARL</option>
+                    <option>EURL</option>
+                    <option>Auto-entrepreneur</option>
+                    <option>SA</option>
+                    <option>Association</option>
+                </select>
+                <label>Devise</label>
+                <select id="w-devise">
+                    <option>EUR</option>
+                    <option>USD</option>
+                    <option>CHF</option>
+                </select>
+            </div>
+
+            <div id="wizard-step-2" class="wizard-step hidden">
+                <label>Durée du prévisionnel</label>
+                <div class="chip-group" id="w-duree">
+                    <button class="chip" data-val="1">1 an</button>
+                    <button class="chip" data-val="2">2 ans</button>
+                    <button class="chip active" data-val="3">3 ans</button>
+                    <button class="chip" data-val="4">4 ans</button>
+                    <button class="chip" data-val="5">5 ans</button>
+                </div>
+                <label>Date de début d'activité</label>
+                <input type="date" id="w-date-debut">
+                <label>Assujetti à la TVA ?</label>
+                <div class="chip-group" id="w-tva">
+                    <button class="chip active" data-val="1">Oui</button>
+                    <button class="chip" data-val="0">Non</button>
+                </div>
+            </div>
+
+            <div id="wizard-step-3" class="wizard-step hidden">
+                <label>Taux IS (%)</label><input type="number" id="w-is" value="15">
+                <label>Taux charges sociales TNS (%)</label><input type="number" id="w-cs" value="45">
+                <label>Inflation annuelle (%)</label><input type="number" id="w-inflation" value="2">
+                <label>Croissance annuelle cible (%)</label><input type="number" id="w-croissance" value="10">
+            </div>
+
+            <div class="wizard-actions">
+                <button id="wizard-prev" class="btn-ghost hidden">Précédent</button>
+                <button id="wizard-next" class="btn-primary">Suivant</button>
+                <button id="wizard-finish" class="btn-primary hidden">Créer le prévisionnel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP SHELL ================= -->
+    <div id="app" class="app hidden">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="logo-dot"></span> <strong id="brand-name">Prévisionnel Pro</strong>
+            </div>
+            <nav class="sidebar-nav" id="sidebar-nav"><!-- injecté par ui.js --></nav>
+            <div class="sidebar-footer">
+                <button id="btn-theme" title="Changer de thème">🌓</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <select id="scenario-select">
+                        <option value="normal">Scénario Normal</option>
+                        <option value="optimiste">Scénario Optimiste</option>
+                        <option value="pessimiste">Scénario Pessimiste</option>
+                    </select>
+                </div>
+                <div class="topbar-right">
+                    <span id="autosave-indicator" class="badge-save">Enregistré ✓</span>
+                    <button id="btn-undo" title="Annuler">↶</button>
+                    <button id="btn-redo" title="Rétablir">↷</button>
+                    <button id="btn-export-json" class="btn-ghost">Export JSON</button>
+                    <button id="btn-import-json" class="btn-ghost">Import JSON</button>
+                    <button id="btn-export-excel" class="btn-secondary">Excel</button>
+                    <button id="btn-export-pdf" class="btn-primary">Export PDF</button>
+                </div>
+            </header>
+
+            <div id="alert-bar" class="alert-bar hidden"></div>
+
+            <section id="main-content" class="main-content"><!-- injecté dynamiquement --></section>
+        </main>
+    </div>
+
+    <!-- Conteneur du modal Carnet de commande (rempli dynamiquement par ui.js) -->
+    <div id="carnet-modal-overlay" class="wizard-overlay hidden"></div>
+
+    <input type="file" id="import-file-input" accept=".json" class="hidden">
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
